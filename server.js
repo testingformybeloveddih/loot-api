@@ -28,7 +28,7 @@ setInterval(() => {
       console.log(`🗑️ تم حذف اللاعب ${player.username} (ID: ${id}) لانقطاع التحديث`);
     }
   }
-}, 2000); // يفحص كل ثانيتين
+}, 2000);
 
 app.post('/update', checkAuth, (req, res) => {
   const { userId, username, backpackItems, jobId, placeId } = req.body;
@@ -57,7 +57,7 @@ app.post('/command', checkAuth, (req, res) => {
   }
   const cmd = {
     id: Date.now() + Math.random(),
-    targetUserId,
+    targetUserId,          // سيبقى كما هو (رقم أو نص)
     action,
     actualTargetUserId: actualTargetUserId || targetUserId,
     timestamp: Date.now()
@@ -66,10 +66,11 @@ app.post('/command', checkAuth, (req, res) => {
   res.json({ success: true, commandId: cmd.id });
 });
 
+// ✅ التعديل الجوهري هنا
 app.get('/commands/:userId', checkAuth, (req, res) => {
-  const userId = req.params.userId;
-  const myCommands = commands.filter(cmd => cmd.targetUserId === userId);
-  commands = commands.filter(cmd => cmd.targetUserId !== userId);
+  const userId = req.params.userId; // نص
+  const myCommands = commands.filter(cmd => String(cmd.targetUserId) === userId);
+  commands = commands.filter(cmd => String(cmd.targetUserId) !== userId);
   res.json(myCommands);
 });
 
