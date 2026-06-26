@@ -8,8 +8,8 @@ let players = {};
 let commands = [];
 
 const API_KEY = "dih";
+const STALE_TIMEOUT = 3000; // 3 ثوانٍ
 
-// دالة فحص المفتاح من الهيدر أو من الـ query
 function checkAuth(req, res, next) {
   const headerKey = req.headers['x-api-key'];
   const queryKey = req.query.key;
@@ -18,6 +18,17 @@ function checkAuth(req, res, next) {
   }
   res.status(403).json({ error: 'ممنوع' });
 }
+
+// تنظيف اللاعبين المنقطعين
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, player] of Object.entries(players)) {
+    if (now - player.lastUpdate > STALE_TIMEOUT) {
+      delete players[id];
+      console.log(`🗑️ تم حذف اللاعب ${player.username} (ID: ${id}) لانقطاع التحديث`);
+    }
+  }
+}, 2000); // يفحص كل ثانيتين
 
 app.post('/update', checkAuth, (req, res) => {
   const { userId, username, backpackItems, jobId, placeId } = req.body;
