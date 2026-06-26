@@ -9,11 +9,14 @@ let commands = [];
 
 const API_KEY = "dih";
 
+// دالة فحص المفتاح من الهيدر أو من الـ query
 function checkAuth(req, res, next) {
-  if (req.headers['x-api-key'] !== API_KEY) {
-    return res.status(403).json({ error: 'ممنوع' });
+  const headerKey = req.headers['x-api-key'];
+  const queryKey = req.query.key;
+  if (headerKey === API_KEY || queryKey === API_KEY) {
+    return next();
   }
-  next();
+  res.status(403).json({ error: 'ممنوع' });
 }
 
 app.post('/update', checkAuth, (req, res) => {
@@ -36,7 +39,6 @@ app.get('/players', checkAuth, (req, res) => {
   res.json(Object.values(players));
 });
 
-// route جديد: إرسال أمر مع هدف فعلي
 app.post('/command', checkAuth, (req, res) => {
   const { targetUserId, action, actualTargetUserId } = req.body;
   if (!targetUserId || !action) {
@@ -44,9 +46,9 @@ app.post('/command', checkAuth, (req, res) => {
   }
   const cmd = {
     id: Date.now() + Math.random(),
-    targetUserId,          // أنت (اللي راح ينفذ)
-    action,                // freeze, steal, etc.
-    actualTargetUserId: actualTargetUserId || targetUserId,  // الضحية
+    targetUserId,
+    action,
+    actualTargetUserId: actualTargetUserId || targetUserId,
     timestamp: Date.now()
   };
   commands.push(cmd);
